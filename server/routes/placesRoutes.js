@@ -16,17 +16,25 @@ const upload = multer({ storage: storage });
 const {
   addNewPlace,
   getPlaces,
+  getFilteredPlaces,
   viewPlace,
   updatePlace,
   deletePlace,
 } = require("../controllers/placesController");
 
-const { isAuthenticated } = require("../middleware/auth");
+const { isAuthenticated, isAuthorized } = require("../middleware/auth");
 
-router.post("/", upload.array("photos", 100), isAuthenticated, addNewPlace);
+router.post(
+  "/",
+  upload.array("photos", 100),
+  isAuthenticated,
+  isAuthorized,
+  addNewPlace
+);
 router.get("", isAuthenticated, getPlaces);
+router.get("/", isAuthenticated, getFilteredPlaces);
 router.get("/:id", isAuthenticated, viewPlace);
-router.put("/:id", isAuthenticated, updatePlace);
-router.delete("/:id", isAuthenticated, deletePlace);
+router.put("/:id", isAuthenticated, isAuthorized, updatePlace);
+router.delete("/:id", isAuthenticated, isAuthorized, deletePlace);
 
 module.exports = router;

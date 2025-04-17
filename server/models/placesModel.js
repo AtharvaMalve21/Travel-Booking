@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const packageSchema = new Schema({
+  name: String,
+  costPerNight: Number,
+  maxGuests: Number,
+});
+
 const placeSchema = new Schema(
   {
     title: {
@@ -21,12 +27,13 @@ const placeSchema = new Schema(
     checkIn: Number,
     checkOut: Number,
     maxGuests: Number,
-    price:Number,
+    price: Number,
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    packages: [packageSchema],
   },
   { timestamps: true }
 );

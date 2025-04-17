@@ -135,6 +135,45 @@ exports.viewPlace = async (req, res) => {
   }
 };
 
+exports.getFilteredPlaces = async (req, res) => {
+  try {
+    const { address, checkIn, checkOut, guests, budget } = req.query;
+
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+
+    const diffTime = Math.abs(end - start);
+
+    const numDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    const maxBudget = parseInt(budget);
+
+    const filter = {
+      address: { $regex: new RegExp(address, "i") }, // case-insensitive partial match
+      packages: {
+        $elemMatch: {
+          costPerNight: { $lte: maxBudget / numDays },
+          maxGuests: { $gte: guestCount },
+        },
+      },
+    };
+
+    const places = await Place.find(filter);
+
+    res.status(200).json({
+      success: true,
+      data: places,
+      message: "Here are your list of places as per your needs.",
+    });
+    
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
 exports.updatePlace = async (req, res) => {
   try {
     const userId = req.user._id;
