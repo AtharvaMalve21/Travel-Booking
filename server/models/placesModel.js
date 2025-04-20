@@ -10,6 +10,13 @@ const packageSchema = new Schema({
 
 const placeSchema = new Schema(
   {
+    tourType: {
+      type: String,
+      enum: ["Kashmir Tours", "Manali Tours", "Ladakh Tours"],
+    },
+    additionalDetails: {
+      type: String,
+    },
     title: {
       type: String,
       required: true,

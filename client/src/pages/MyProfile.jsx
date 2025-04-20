@@ -38,6 +38,7 @@ const MyProfile = () => {
             alt="Profile"
             className="w-28 h-28 mx-auto rounded-full object-cover border-4 border-blue-500 shadow-md mb-4"
           />
+          <p>{user?.role}</p>
           <h2 className="text-2xl font-bold text-gray-800">{user?.name}</h2>
           <p className="text-gray-600 text-sm mt-1">{user?.email}</p>
           <div className="flex justify-center gap-2 mt-2">
@@ -49,6 +50,7 @@ const MyProfile = () => {
             <span className="text-gray-500 text-sm">
               Total bookings: {userBooking.length}
             </span>
+            
           </div>
 
           <div className="mt-4 flex justify-center">

@@ -106,7 +106,7 @@ const MyAccomodations = () => {
                   <span className="text-xl font-semibold text-green-600">
                     ${place.price}
                   </span>
-                  <span className="text-sm text-gray-500"> /night</span>
+                  <span className="text-sm text-gray-500"></span>
                 </div>
               </div>
             </Link>

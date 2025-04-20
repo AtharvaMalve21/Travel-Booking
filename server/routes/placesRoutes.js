@@ -31,8 +31,8 @@ router.post(
   isAuthorized,
   addNewPlace
 );
-router.get("", isAuthenticated, getPlaces);
-router.get("/", isAuthenticated, getFilteredPlaces);
+router.get("/", isAuthenticated, getPlaces);
+router.get("/filter", isAuthenticated, getFilteredPlaces);
 router.get("/:id", isAuthenticated, viewPlace);
 router.put("/:id", isAuthenticated, isAuthorized, updatePlace);
 router.delete("/:id", isAuthenticated, isAuthorized, deletePlace);

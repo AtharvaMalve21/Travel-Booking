@@ -12,7 +12,16 @@ exports.addNewPlace = async (req, res) => {
       });
     }
 
+    if (user.role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: "Only admins can create a place!",
+      });
+    }
+
     const {
+      tourType,
+      additionalDetails,
       title,
       address,
       description,
@@ -24,8 +33,11 @@ exports.addNewPlace = async (req, res) => {
       price,
     } = req.body;
 
+    console.log(req.body);
+
     if (
       !title ||
+      !additionalDetails ||
       !address ||
       !description ||
       !perks ||
@@ -51,6 +63,8 @@ exports.addNewPlace = async (req, res) => {
     }
 
     const place = await Place.create({
+      tourType,
+      additionalDetails,
       title,
       address,
       description,
@@ -137,35 +151,58 @@ exports.viewPlace = async (req, res) => {
 
 exports.getFilteredPlaces = async (req, res) => {
   try {
-    const { address, checkIn, checkOut, guests, budget } = req.query;
+    const { tourType, checkIn, checkOut, guests, budget } = req.query;
 
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
+    const filter = {};
 
-    const diffTime = Math.abs(end - start);
+    // Filter by tour type if provided
+    if (tourType) {
+      filter.tourType = { $regex: new RegExp(tourType, "i") };
+    }
 
-    const numDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // Filter by package conditions if dates, guests, and budget are provided
+    if (checkIn && checkOut && guests && budget) {
+      const start = new Date(checkIn);
+      const end = new Date(checkOut);
 
-    const maxBudget = parseInt(budget);
+      // Ensure dates are valid
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid check-in or check-out date.",
+        });
+      }
 
-    const filter = {
-      address: { $regex: new RegExp(address, "i") }, // case-insensitive partial match
-      packages: {
+      const diffTime = Math.abs(end - start);
+      const numDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      const maxBudget = parseInt(budget);
+
+      if (isNaN(maxBudget) || numDays === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid budget or stay duration.",
+        });
+      }
+
+      filter.packages = {
         $elemMatch: {
           costPerNight: { $lte: maxBudget / numDays },
-          maxGuests: { $gte: guestCount },
+          maxGuests: { $gte: parseInt(guests) },
         },
-      },
-    };
+      };
+    }
+
+    console.log("Generated Filter:", filter);
 
     const places = await Place.find(filter);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: places,
       message: "Here are your list of places as per your needs.",
     });
-    
+
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -187,6 +224,7 @@ exports.updatePlace = async (req, res) => {
 
     const { id } = req.params;
     const place = await Place.findById(id);
+
     if (!place) {
       return res.status(404).json({
         success: false,
@@ -194,12 +232,10 @@ exports.updatePlace = async (req, res) => {
       });
     }
 
-    //check if the user is authorized to update this place
-
-    if (place.owner._id.toString() !== userId.toString()) {
+    if (user.role !== "admin") {
       return res.status(401).json({
         success: false,
-        message: "User is not authorized to update this place.",
+        message: "Only admins can update a place!",
       });
     }
 
@@ -261,12 +297,10 @@ exports.deletePlace = async (req, res) => {
       });
     }
 
-    //check if the user is authorized to delete this place
-
-    if (place.owner._id.toString() !== userId.toString()) {
+    if (user.role !== "admin") {
       return res.status(401).json({
         success: false,
-        message: "User is not authorized to delete this place.",
+        message: "Only admins can delete this place!",
       });
     }
 

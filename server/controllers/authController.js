@@ -7,7 +7,7 @@ dotenv.config();
 exports.register = async (req, res) => {
   try {
     //fetch user details
-    const { name, email, password, gender, phone } = req.body;
+    const { name, email, password, gender, phone, role } = req.body;
 
     const profilePic = req.file?.path;
 
@@ -18,7 +18,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    if (!name || !email || !password || !gender || !phone) {
+    if (!name || !email || !password || !gender || !phone || !role) {
       return res.status(400).json({
         success: false,
         message: "Please fill in all the required details.",
@@ -52,6 +52,7 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       profilePic,
       gender,
+      role,
       phone,
     });
 

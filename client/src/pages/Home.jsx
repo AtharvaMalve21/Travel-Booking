@@ -1,12 +1,20 @@
-import React, { useContext, useEffect } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { PlaceContext } from "../context/PlaceContext";
 import { MapPinIcon, PhoneIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const Home = () => {
   const { places, setPlaces } = useContext(PlaceContext);
   const URI = import.meta.env.VITE_BACKEND_URI;
+
+  const [tourType, setTourType] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [maxGuests, setMaxGuests] = useState("");
+  const [budget, setBudget] = useState("");
 
   const fetchPlaceDetails = async () => {
     try {
@@ -19,12 +27,106 @@ const Home = () => {
     }
   };
 
+  const fetchFilteredPlaces = async () => {
+    try {
+      const { data } = await axios.get(`${URI}/api/places/filter`, {
+        params: {
+          tourType,
+          checkIn,
+          checkOut,
+          guests: maxGuests,
+          budget,
+        },
+        withCredentials: true,
+      });
+
+      if (data.success) {
+        setPlaces(data.data);
+        setTourType("");
+        setCheckIn("");
+        setCheckOut("");
+        setMaxGuests("");
+        setBudget("");
+      }
+    } catch (err) {
+      toast.error(err.response?.data.message);
+    }
+  };
+
   useEffect(() => {
     fetchPlaceDetails();
   }, []);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
+      {/* Filter Section */}
+      <div className="bg-white p-6 rounded-2xl shadow-md mb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+        <div>
+          <label className="text-sm font-medium text-gray-700">Tour Type</label>
+          <input
+            type="text"
+            placeholder="e.g. Beach, Mountain"
+            value={tourType}
+            onChange={(ev) => setTourType(ev.target.value)}
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700">Check In</label>
+          <input
+            type="date"
+            value={checkIn}
+            onChange={(ev) => setCheckIn(ev.target.value)}
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700">Check Out</label>
+          <input
+            type="date"
+            value={checkOut}
+            onChange={(ev) => setCheckOut(ev.target.value)}
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-gray-700">Guests</label>
+          <input
+            type="number"
+            placeholder="No. of guests"
+            value={maxGuests}
+            onChange={(ev) => setMaxGuests(ev.target.value)}
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-gray-700">Budget</label>
+          <input
+            type="number"
+            placeholder="₹ Budget"
+            value={budget}
+            onChange={(ev) => setBudget(ev.target.value)}
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <div>
+          <button
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition duration-300"
+            onClick={fetchFilteredPlaces}
+          >
+            Search
+          </button>
+        </div>
+      </div>
+
+      {/* Places Grid */}
       {places.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {places.map((place) => (
@@ -33,16 +135,13 @@ const Home = () => {
               key={place._id}
               className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow duration-300 group overflow-hidden"
             >
-              {/* Place Image */}
               <img
                 src={`${URI}/${place.photos[0]}`}
                 alt={place.title}
                 className="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
 
-              {/* Content */}
               <div className="p-4">
-                {/* Owner Info */}
                 <div className="flex items-center gap-4 mb-4">
                   <img
                     src={`${URI}/${place.owner.profilePic}`}
@@ -50,26 +149,27 @@ const Home = () => {
                     className="w-12 h-12 rounded-full object-cover border border-gray-300"
                   />
                   <div>
-                    <div className="flex items-center gap-1 font-semibold text-gray-700">
-                      <span>{place.owner.name}</span>
+                    <div className="font-semibold text-gray-700">
+                      {place.owner.name}
                     </div>
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 flex items-center gap-1">
                       <EnvelopeIcon className="w-4 h-4 text-gray-400" />
-                      <span>{place.owner.email}</span>
+                      {place.owner.email}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 flex items-center gap-1">
                       <PhoneIcon className="w-4 h-4" />
                       {place.owner.phone}
                     </div>
                   </div>
                 </div>
 
-                {/* Place Info */}
                 <h2 className="text-lg font-bold text-gray-800 mb-1">
-                  {place.title}
+                  {place.tourType}
                 </h2>
+                
                 <div className="flex items-center text-gray-500 text-sm mb-2">
                   <MapPinIcon className="w-5 h-5 text-red-500 mr-1" />
+                  {place.title} {" "}
                   {place.address}
                 </div>
                 <p className="text-sm text-gray-600 line-clamp-3">
@@ -78,9 +178,9 @@ const Home = () => {
               </div>
               <div className="px-4 pb-4 text-right">
                 <span className="text-xl font-semibold text-green-600">
-                  ${place.price}
+                  ₹{place.price}
                 </span>
-                <span className="text-sm text-gray-500"> /night</span>
+                <span className="text-sm text-gray-500"></span>
               </div>
             </Link>
           ))}

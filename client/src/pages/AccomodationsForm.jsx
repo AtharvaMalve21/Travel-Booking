@@ -13,6 +13,8 @@ const perksList = [
 ];
 
 const AccommodationsForm = () => {
+  const [tourType, setTourType] = useState("");
+  const [additionalDetails, setAdditionalDetails] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
@@ -44,6 +46,8 @@ const AccommodationsForm = () => {
     ev.preventDefault();
     try {
       const formData = new FormData();
+      formData.append("tourType", tourType);
+      formData.append("additionalDetails", additionalDetails);
       formData.append("title", title);
       formData.append("description", description);
       formData.append("address", address);
@@ -53,6 +57,7 @@ const AccommodationsForm = () => {
       formData.append("checkIn", checkIn);
       formData.append("checkOut", checkOut);
       formData.append("maxGuests", maxGuests);
+      formData.append("price", price);
 
       const { data } = await axios.post(
         URI + "/api/places",
@@ -82,6 +87,24 @@ const AccommodationsForm = () => {
       </h2>
 
       <form onSubmit={addNewPlace} className="space-y-6">
+        {/* Tour Type  */}
+        <div>
+          <label
+            htmlFor="tourType"
+            className="block text-lg font-medium text-gray-700"
+          >
+            Tour Type
+          </label>
+          <input
+            type="text"
+            id="tourType"
+            placeholder="e.g. Kashmir Tours"
+            className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:border-blue-400"
+            value={tourType}
+            onChange={(ev) => setTourType(ev.target.value)}
+          />
+        </div>
+
         {/* Title */}
         <div>
           <label
@@ -212,6 +235,25 @@ const AccommodationsForm = () => {
           </div>
         </div>
 
+        {/* Additional Details  */}
+
+        <div>
+          <label
+            htmlFor="additionalDetails"
+            className="block text-lg font-medium text-gray-700"
+          >
+            Amenities
+          </label>
+          <textarea
+            id="additionalDetails"
+            placeholder="amenities"
+            rows={3}
+            className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring focus:border-blue-400"
+            value={additionalDetails}
+            onChange={(ev) => setAdditionalDetails(ev.target.value)}
+          />
+        </div>
+
         {/* Extra Info */}
         <div>
           <label
@@ -291,7 +333,7 @@ const AccommodationsForm = () => {
             onChange={(ev) => setMaxGuests(ev.target.value)}
           />
         </div>
-        
+
         {/* Price */}
         <div>
           <label
@@ -299,7 +341,7 @@ const AccommodationsForm = () => {
             className="block text-lg font-medium text-gray-700"
           >
             Price{" "}
-            <span className="text-sm text-gray-500">(per night in $)</span>
+            <span className="text-sm text-gray-500">(per night in ₹)</span>
           </label>
           <input
             type="number"

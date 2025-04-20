@@ -12,12 +12,12 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [gender, setGender] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState(""); // ✅ New state
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const { setIsLoggedIn } = useContext(UserContext);
-
   const navigate = useNavigate();
   const URI = import.meta.env.VITE_BACKEND_URI;
 
@@ -34,8 +34,8 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!gender) {
-      toast.error("Please select a gender.");
+    if (!gender || !role) {
+      toast.error("Please select all required fields.");
       return;
     }
 
@@ -45,6 +45,7 @@ const Register = () => {
     formData.append("password", password);
     formData.append("gender", gender);
     formData.append("phone", phone);
+    formData.append("role", role); // ✅ Add role to form data
     if (profilePhoto) {
       formData.append("profilePic", profilePhoto);
     }
@@ -192,7 +193,40 @@ const Register = () => {
               />
               Female
             </label>
+            <label className="flex items-center gap-1 text-sm text-gray-700">
+              <input
+                type="radio"
+                name="gender"
+                value="Other"
+                checked={gender === "Other"}
+                onChange={(e) => setGender(e.target.value)}
+              />
+              Other
+            </label>
           </div>
+        </div>
+
+        {/* Role */}
+        <div className="mb-4">
+          <label
+            htmlFor="role"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Role
+          </label>
+          <select
+            id="role"
+            required
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="" disabled>
+              Select a role
+            </option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
         </div>
 
         {/* Phone */}

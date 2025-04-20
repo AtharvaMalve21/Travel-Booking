@@ -12,6 +12,7 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const placesRoutes = require("./routes/placesRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 
 dotenv.config();
 const app = express();
@@ -37,6 +38,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/places", placesRoutes);
 app.use("/api/booking", bookingRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.get("/", async (req, res) => {
   try {

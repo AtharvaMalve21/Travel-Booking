@@ -18,7 +18,7 @@ const userSchema = new Schema(
     },
     gender: {
       type: String,
-      enum: ["Male", "Female"],
+      enum: ["Male", "Female","Other"],
     },
     phone: {
       type: String,
