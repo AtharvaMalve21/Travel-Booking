@@ -5,10 +5,13 @@ import { PlaceContext } from "../context/PlaceContext";
 import { MapPinIcon, PhoneIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { UserContext } from "../context/UserContext";
 
 const Home = () => {
   const { places, setPlaces } = useContext(PlaceContext);
   const URI = import.meta.env.VITE_BACKEND_URI;
+
+  const { isLoggedIn } = useContext(UserContext);
 
   const [tourType, setTourType] = useState("");
   const [checkIn, setCheckIn] = useState("");
@@ -28,34 +31,30 @@ const Home = () => {
   };
 
   const fetchFilteredPlaces = async () => {
+    if (!tourType) {
+      toast.error("Please select a tour type.");
+      return;
+    }
+
     try {
       const { data } = await axios.get(`${URI}/api/places/filter`, {
-        params: {
-          tourType,
-          checkIn,
-          checkOut,
-          guests: maxGuests,
-          budget,
-        },
+        params: { tourType },
         withCredentials: true,
       });
 
       if (data.success) {
         setPlaces(data.data);
-        setTourType("");
-        setCheckIn("");
-        setCheckOut("");
-        setMaxGuests("");
-        setBudget("");
+      } else {
+        toast.error(data.message || "No places found.");
       }
     } catch (err) {
-      toast.error(err.response?.data.message);
+      toast.error(err.response?.data.message || "Failed to fetch places");
     }
   };
 
   useEffect(() => {
     fetchPlaceDetails();
-  }, []);
+  }, [isLoggedIn]);
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -63,44 +62,48 @@ const Home = () => {
       <div className="bg-white p-6 rounded-2xl shadow-md mb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
         <div>
           <label className="text-sm font-medium text-gray-700">Tour Type</label>
-          <input
-            type="text"
-            placeholder="e.g. Beach, Mountain"
+          <select
             value={tourType}
             onChange={(ev) => setTourType(ev.target.value)}
             className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
+          >
+            <option value="">Select Tour Type</option>
+            <option value="Kashmir Tours">Kashmir Tours</option>
+            <option value="Manali Tours">Manali Tours</option>
+            <option value="Ladakh Tours">Ladakh Tours</option>
+          </select>
         </div>
+
         <div>
           <label className="text-sm font-medium text-gray-700">Check In</label>
           <input
             type="date"
             value={checkIn}
             onChange={(ev) => setCheckIn(ev.target.value)}
-            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2"
           />
         </div>
+
         <div>
           <label className="text-sm font-medium text-gray-700">Check Out</label>
           <input
             type="date"
             value={checkOut}
             onChange={(ev) => setCheckOut(ev.target.value)}
-            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2"
           />
         </div>
+
         <div>
-          <label className="text-sm font-medium text-gray-700">Guests</label>
+          <label className="text-sm font-medium text-gray-700">
+            Max Guests
+          </label>
           <input
             type="number"
-            placeholder="No. of guests"
             value={maxGuests}
             onChange={(ev) => setMaxGuests(ev.target.value)}
-            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2"
+            placeholder="e.g. 4"
           />
         </div>
 
@@ -108,11 +111,10 @@ const Home = () => {
           <label className="text-sm font-medium text-gray-700">Budget</label>
           <input
             type="number"
-            placeholder="₹ Budget"
             value={budget}
             onChange={(ev) => setBudget(ev.target.value)}
-            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
+            className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2"
+            placeholder="e.g. ₹30,000"
           />
         </div>
 
@@ -166,11 +168,10 @@ const Home = () => {
                 <h2 className="text-lg font-bold text-gray-800 mb-1">
                   {place.tourType}
                 </h2>
-                
+
                 <div className="flex items-center text-gray-500 text-sm mb-2">
                   <MapPinIcon className="w-5 h-5 text-red-500 mr-1" />
-                  {place.title} {" "}
-                  {place.address}
+                  {place.title} {place.address}
                 </div>
                 <p className="text-sm text-gray-600 line-clamp-3">
                   {place.description}
@@ -180,7 +181,6 @@ const Home = () => {
                 <span className="text-xl font-semibold text-green-600">
                   ₹{place.price}
                 </span>
-                <span className="text-sm text-gray-500"></span>
               </div>
             </Link>
           ))}

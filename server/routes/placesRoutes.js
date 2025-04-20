@@ -16,7 +16,7 @@ const upload = multer({ storage: storage });
 const {
   addNewPlace,
   getPlaces,
-  getFilteredPlaces,
+  filterPlaces,
   viewPlace,
   updatePlace,
   deletePlace,
@@ -32,7 +32,7 @@ router.post(
   addNewPlace
 );
 router.get("/", isAuthenticated, getPlaces);
-router.get("/filter", isAuthenticated, getFilteredPlaces);
+router.get("/filter", isAuthenticated, filterPlaces);
 router.get("/:id", isAuthenticated, viewPlace);
 router.put("/:id", isAuthenticated, isAuthorized, updatePlace);
 router.delete("/:id", isAuthenticated, isAuthorized, deletePlace);

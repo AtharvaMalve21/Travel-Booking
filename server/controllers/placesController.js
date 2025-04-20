@@ -149,65 +149,30 @@ exports.viewPlace = async (req, res) => {
   }
 };
 
-exports.getFilteredPlaces = async (req, res) => {
+exports.filterPlaces = async (req, res) => {
   try {
-    const { tourType, checkIn, checkOut, guests, budget } = req.query;
+    const { tourType } = req.query;
 
-    const filter = {};
-
-    // Filter by tour type if provided
-    if (tourType) {
-      filter.tourType = { $regex: new RegExp(tourType, "i") };
+    if (!tourType) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Tour type is required" });
     }
 
-    // Filter by package conditions if dates, guests, and budget are provided
-    if (checkIn && checkOut && guests && budget) {
-      const start = new Date(checkIn);
-      const end = new Date(checkOut);
+    const places = await Place.find({ tourType }).populate("owner");
 
-      // Ensure dates are valid
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        return res.status(400).json({
+    if (places.length === 0) {
+      return res
+        .status(404)
+        .json({
           success: false,
-          message: "Invalid check-in or check-out date.",
+          message: "No places found for this tour type",
         });
-      }
-
-      const diffTime = Math.abs(end - start);
-      const numDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      const maxBudget = parseInt(budget);
-
-      if (isNaN(maxBudget) || numDays === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid budget or stay duration.",
-        });
-      }
-
-      filter.packages = {
-        $elemMatch: {
-          costPerNight: { $lte: maxBudget / numDays },
-          maxGuests: { $gte: parseInt(guests) },
-        },
-      };
     }
 
-    console.log("Generated Filter:", filter);
-
-    const places = await Place.find(filter);
-
-    return res.status(200).json({
-      success: true,
-      data: places,
-      message: "Here are your list of places as per your needs.",
-    });
-
+    res.status(200).json({ success: true, data: places });
   } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

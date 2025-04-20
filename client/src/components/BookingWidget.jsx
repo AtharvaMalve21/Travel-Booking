@@ -133,7 +133,7 @@ const BookingWidget = ({ price }) => {
         {numberOfNights > 0 && (
           <div className="text-right text-gray-700">
             <span className="text-lg font-semibold text-green-600">
-              ${totalAmount}
+            ₹{totalAmount}
             </span>{" "}
             <span className="text-sm">total for {numberOfNights} nights</span>
           </div>
